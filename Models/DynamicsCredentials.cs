@@ -12,5 +12,8 @@ namespace Integrations.Models
 
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public string Region { get; set; }
     }
 }

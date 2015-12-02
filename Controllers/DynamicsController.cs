@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Web.Http;
+using System.Collections.Generic;
 using System.ServiceModel.Security;
 
-using Integrations.Models;
-using Integrations.Services;
 using Microsoft.Xrm.Sdk;
 using Newtonsoft.Json.Linq;
+using Integrations.Models;
+using Integrations.Services;
 
 namespace Integrations.Controllers
 {
@@ -22,11 +22,8 @@ namespace Integrations.Controllers
             if (crmService != null)
                 crmService.Dispose();
         }
-
-        /// <summary>
-        /// This method will try to get organizations matching passed credentials.If it fails it returns Unauthorized.
-        /// </summary>
-        // TODO: Should be split up into Validate + GetOrganizations
+        
+        // TODO: Should be split up into Validate + GetOrganizations (CHECK)
         [Route("Validate")]
         [HttpPost]
         public IHttpActionResult ValidateCredentials([FromUri]DynamicsCredentials credentials)
@@ -43,6 +40,10 @@ namespace Integrations.Controllers
                 return Ok();
             }
             catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch(SecurityAccessDeniedException)
             {
                 return Unauthorized();
             }
@@ -69,6 +70,10 @@ namespace Integrations.Controllers
                 return Ok(organizations);
             }
             catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
             {
                 return Unauthorized();
             }
@@ -100,6 +105,10 @@ namespace Integrations.Controllers
             {
                 return Unauthorized();
             }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
         }
 
         [Route("Organizations/{orgName}/MarketLists/{listId}/Contacts")]
@@ -119,6 +128,10 @@ namespace Integrations.Controllers
             {
                 return Unauthorized();
             }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
         }
 
         [Route("Organizations/{orgName}/Contacts/{contactId}/Donotbulkemail")]
@@ -134,6 +147,10 @@ namespace Integrations.Controllers
                 return Ok();
             }
             catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
             {
                 return Unauthorized();
             }

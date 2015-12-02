@@ -137,6 +137,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="PresentationFramework" />
+    <Reference Include="ShopifyAPIAdapterLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ShopifyAPI.1.0.0\lib\net40\ShopifyAPIAdapterLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Activities" />
     <Reference Include="System.Activities.Presentation" />
     <Reference Include="System.DirectoryServices" />
@@ -197,12 +201,14 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DynamicsController.cs" />
     <Compile Include="Controllers\SalesForceController.cs" />
+    <Compile Include="Controllers\ShopifyController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\DynamicsCredentials.cs" />
     <Compile Include="Models\MyOrganizationCrmSdkTypes.cs" />
     <Compile Include="Models\SalesForceCredentials.cs" />
+    <Compile Include="Models\ShopifyToken.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -212,6 +218,7 @@
     <Compile Include="Services\DeviceIdManager.cs" />
     <Compile Include="Services\DynamicsService.cs" />
     <Compile Include="Services\SalesForceService.cs" />
+    <Compile Include="Services\ShopifyService.cs" />
     <Compile Include="Web References\sForce\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -1,16 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+using System.Web.Services.Protocols;
+
+using Newtonsoft.Json.Linq;
 using Integrations.Models;
 using Integrations.sForce;
-using System;
-using System.Collections;
-using System.Text;
-using System.Web.Services.Protocols;
 
 namespace Integrations.Services
 {
     public class SalesForceService
     {
-        SforceService binding;
+        readonly SforceService binding;
 
         public SalesForceService()
         {
@@ -21,13 +24,10 @@ namespace Integrations.Services
         {
             try
             {
-                LoginResult lr;
-                lr = binding.login(creds.UserName, creds.Password + creds.SecurityToken);
-                var authEndPoint = binding.Url;
-                binding.Url = lr.serverUrl;
+                var loginResult = binding.login(creds.UserName, creds.Password + creds.SecurityToken);
+                binding.Url = loginResult.serverUrl;
 
-                binding.SessionHeaderValue = new SessionHeader();
-                binding.SessionHeaderValue.sessionId = lr.sessionId;
+                binding.SessionHeaderValue = new SessionHeader {sessionId = loginResult.sessionId};
                 return true;
             }
             catch (SoapException)
@@ -36,7 +36,7 @@ namespace Integrations.Services
             }
         }
 
-        public void logout()
+        public void Logout()
         {
             binding.logout();
         }
@@ -45,51 +45,40 @@ namespace Integrations.Services
         {
             var entityType = "campaign";
 
-            var fieldsQuery = getAllFieldsQuery(entityType);
-            var query = string.Format("SELECT {0} FROM {1}", fieldsQuery, entityType);
+            var fieldsQuery = GetAllFieldsQuery(entityType);
+            var query = $"SELECT {fieldsQuery} FROM {entityType}";
             var queryResult = binding.query(query);
-            var entities = prettiFyAndTranslate(queryResult, entityType, translate, new string[0]);
+            var entities = PrettiFyAndTranslate(queryResult, entityType, translate, new string[0]);
 
             return entities;
         }
 
         public JArray GetContactsInCampaign(string id, bool translate, int top, string[] fields)
         {
-            var numberOfContacts = getNumberOfContacts(id, top);
+            var numberOfContacts = GetNumberOfContacts(id, top);
             var campaignMemberQuery = getCampaignMembersQuery(id, top);
-            var campaignMemberIds = getCampaignMemberIds(campaignMemberQuery);
+            var campaignMemberIds = GetCampaignMemberIds(campaignMemberQuery);
 
-            var contacts = getContactsFromCampaignMemberIds(campaignMemberIds, numberOfContacts, translate, fields);
+            var contacts = GetContactsFromCampaignMemberIds(campaignMemberIds, numberOfContacts, translate, fields);
 
             return contacts;
         }
 
-        private JArray getContactsFromCampaignMemberIds(JArray campaignMemberIds, int numberOfContacts, bool translate, string[] fields)
+        private JArray GetContactsFromCampaignMemberIds(JArray campaignMemberIds, int numberOfContacts, bool translate, string[] fields)
         {
             var contacts = new JArray();
             var entityType = "contact";
-            //
-            string salesForceFields;
-
-            if (fields.Length == 0)
-            {
-                salesForceFields = getAllFieldsQuery(entityType);
-            }
-            else
-            {
-                salesForceFields = string.Join(",", fields);
-            }
-            //
+            var salesForceFields = fields.Length == 0 ? GetAllFieldsQuery(entityType) : string.Join(",", fields);
             var loops = (int)Math.Ceiling(((double)numberOfContacts / 500));
 
-            for (int i = 0; i < loops; i++)
+            for (var i = 0; i < loops; i++)
             {
                 var someContactIds = getSomeContacts(campaignMemberIds, i * 500);
                 var contactIdsQuery = buildContactIdsQuery(someContactIds);
 
-                var queryContactsInCampaign = string.Format("SELECT {0} FROM Contact where Id IN ({1})", salesForceFields, contactIdsQuery);
+                var queryContactsInCampaign = $"SELECT {salesForceFields} FROM Contact where Id IN ({contactIdsQuery})";
                 var queryResult = binding.query(queryContactsInCampaign);
-                var campaignMembers = prettiFyAndTranslate(queryResult, entityType, translate, fields);
+                var campaignMembers = PrettiFyAndTranslate(queryResult, entityType, translate, fields);
 
                 foreach (var campaignMember in campaignMembers)
                 {
@@ -100,7 +89,7 @@ namespace Integrations.Services
             return contacts;
         }
 
-        private JArray getCampaignMemberIds(string campaignMemberQuery)
+        private JArray GetCampaignMemberIds(string campaignMemberQuery)
         {
             var allCampaignMemberIds = new JArray();
             var campaignMemberIds = binding.query(campaignMemberQuery);
@@ -126,19 +115,20 @@ namespace Integrations.Services
         {
             if (top == 0)
             {
-                return string.Format("SELECT ContactId FROM CampaignMember where CampaignId = '{0}' AND ContactId != null", id);
+                return $"SELECT ContactId FROM CampaignMember where CampaignId = '{id}' AND ContactId != null";
             }
             else
             {
-                return string.Format("SELECT ContactId FROM CampaignMember where CampaignId = '{0}' AND ContactId != null LIMIT {1}", id, top);
+                return $"SELECT ContactId FROM CampaignMember where CampaignId = '{id}' AND ContactId != null LIMIT {top}";
             }
         }
 
-        private int getNumberOfContacts(string id, int top)
+        private int GetNumberOfContacts(string id, int top)
         {
             if (top == 0)
             {
-                return binding.query(string.Format("SELECT count() FROM CampaignMember where CampaignId = '{0}' AND ContactId != null", id)).size;
+                return binding.query(
+                    $"SELECT count() FROM CampaignMember where CampaignId = '{id}' AND ContactId != null").size;
             }
             else
             {
@@ -172,10 +162,10 @@ namespace Integrations.Services
             return contactIdsString.ToString();
         }
 
-        public JArray prettiFyAndTranslate(QueryResult queryResult, string entityType, bool translate, string[] customFields)
+        public JArray PrettiFyAndTranslate(QueryResult queryResult, string entityType, bool translate, string[] customFields)
         {
             var entities = new JArray();
-            var fields = getFields(entityType, customFields);
+            var fields = GetFields(entityType, customFields);
 
             foreach (sObject attributes in queryResult.records)
             {
@@ -193,9 +183,9 @@ namespace Integrations.Services
             return entities;
         }
 
-        private string getAllFieldsQuery(string entityType)
+        private string GetAllFieldsQuery(string entityType)
         {
-            var fields = getFields(entityType, new string[0]);
+            var fields = GetFields(entityType, new string[0]);
             var fieldsQueryBuilder = new StringBuilder();
 
             foreach (var field in fields)
@@ -209,31 +199,27 @@ namespace Integrations.Services
             return fieldsQueryBuilder.ToString();
         }
 
-        private Field[] getFields(string entityType, string[] fields)
+        private Field[] GetFields(string entityType, IReadOnlyCollection<string> fields)
         {
-            var describeSObjectResults = binding.describeSObjects(new string[] { entityType });
+            var describeSObjectResults = binding.describeSObjects(new[] { entityType });
 
-            if (fields.Length != 0)
+            if (fields.Count != 0)
             {
-                var salesForceFields = new Field[fields.Length];
+                var salesForceFields = new Field[fields.Count];
                 var allFieldsInArray = describeSObjectResults[0].fields;
                 var allFields = new ArrayList();
 
-                for (int i = 0; i < allFieldsInArray.Length; i++)
+                foreach (var field in allFieldsInArray)
                 {
-                    allFields.Add(allFieldsInArray[i].name.ToLower());
+                    allFields.Add(field.name.ToLower());
                 }
 
-                int index = 0;
+                var index = 0;
 
-                for (int i = 0; i < fields.Length; i++)
+                foreach (var fieldIndex in from field in fields where allFields.Contains(field.ToLower()) select allFields.IndexOf(field.ToLower()))
                 {
-                    if (allFields.Contains(fields[i].ToLower()))
-                    {
-                        int fieldIndex = allFields.IndexOf(fields[i].ToLower());
-                        salesForceFields[index] = allFieldsInArray[fieldIndex];
-                        index++;
-                    }
+                    salesForceFields[index] = allFieldsInArray[fieldIndex];
+                    index++;
                 }
 
                 return salesForceFields;
@@ -242,6 +228,11 @@ namespace Integrations.Services
             {
                 return describeSObjectResults[0].fields;
             }
+        }
+
+        public void Dispose()
+        {
+            binding.Dispose();
         }
     }
 }

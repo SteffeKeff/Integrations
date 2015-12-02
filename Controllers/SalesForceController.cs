@@ -1,7 +1,7 @@
-﻿using Integrations.Models;
+﻿using System.Web.Http;
+
+using Integrations.Models;
 using Integrations.Services;
-using System;
-using System.Web.Http;
 
 namespace Integrations.Controllers
 {
@@ -10,76 +10,82 @@ namespace Integrations.Controllers
     public class SalesForceController : ApiController
     {
 
-        SalesForceService service;
+        private SalesForceService crmService;
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            crmService?.Dispose();
+        }
 
         [Route("Validate")]
         [HttpPost]
         public IHttpActionResult ValidateCredentials([FromUri]SalesForceCredentials credentials)
         {
-            try
+            if(!ModelState.IsValid)
             {
-                service = new SalesForceService();
-                if (service.Validate(credentials))
-                {
-                    service.logout();
-
-                    return Ok();
-                }
+                return Unauthorized();
             }
-            catch (NullReferenceException)
+            
+            crmService = new SalesForceService();
+
+            if (crmService.Validate(credentials))
             {
-                return BadRequest();
+                return Ok();
             }
-
-            return Unauthorized();
+            else
+            {
+                return Unauthorized();
+            }
+           
         }
 
         [Route("Campaigns")]
         [HttpPost]
         public IHttpActionResult GetAllCampaigns([FromUri]SalesForceCredentials credentials, [FromUri]bool translate = false)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                service = new SalesForceService();
-
-                if (service.Validate(credentials))
-                {
-                    var campaigns = service.GetCampaigns(translate);
-                    service.logout();
-
-                    return Ok(campaigns);
-                }
+                return Unauthorized();
             }
-            catch (NullReferenceException)
+            
+            crmService = new SalesForceService();
+
+            if (crmService.Validate(credentials))
             {
-                return BadRequest();
-            }
+                var campaigns = crmService.GetCampaigns(translate);
 
-            return Unauthorized();
+                return Ok(campaigns);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+           
         }
 
         [Route("Campaigns/{campaignId}/Contacts")]
         [HttpPost]
         public IHttpActionResult GetAllContacts(string campaignId, [FromUri]SalesForceCredentials credentials, [FromUri] string[] fields, [FromUri]int top = 0, [FromUri]bool translate = true)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                service = new SalesForceService();
-
-                if (service.Validate(credentials))
-                {
-                    var contacts = service.GetContactsInCampaign(campaignId, translate, top, fields);
-                    service.logout();
-
-                    return Ok(contacts);
-                }
+                return Unauthorized();
             }
-            catch (NullReferenceException)
+            
+            crmService = new SalesForceService();
+
+            if (crmService.Validate(credentials))
             {
-                return BadRequest();
-            }
+                var contacts = crmService.GetContactsInCampaign(campaignId, translate, top, fields);
 
-            return Unauthorized();
+                return Ok(contacts);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+            
         }
 
     }

@@ -63,3 +63,5 @@ c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrati
 c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrations\bin\Microsoft.Xrm.Tooling.Connector.xml
 c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrations\bin\System.Web.Http.Cors.xml
 c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrations\bin\Microsoft.Vsa.xml
+c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrations\obj\Debug\Integrations.csprojResolveAssemblyReference.cache
+c:\users\maildirect\documents\visual studio 2015\Projects\Integrations\Integrations\bin\ShopifyAPIAdapterLibrary.dll

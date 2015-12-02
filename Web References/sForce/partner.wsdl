@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:partner.soap.sforce.com" xmlns:fns="urn:fault.partner.soap.sforce.com" xmlns:ens="urn:sobject.partner.soap.sforce.com" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="urn:partner.soap.sforce.com" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:sobject.partner.soap.sforce.com">
@@ -2558,10 +2558,10 @@
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
-      <xsd:element name="logout">
+      <xsd:element name="Logout">
         <xsd:complexType />
       </xsd:element>
-      <xsd:element name="logoutResponse">
+      <xsd:element name="LogoutResponse">
         <xsd:complexType />
       </xsd:element>
       <xsd:element name="invalidateSessions">
@@ -3496,11 +3496,11 @@
   <message name="convertLeadResponse">
     <part name="parameters" element="tns:convertLeadResponse" />
   </message>
-  <message name="logoutRequest">
-    <part name="parameters" element="tns:logout" />
+  <message name="LogoutRequest">
+    <part name="parameters" element="tns:Logout" />
   </message>
-  <message name="logoutResponse">
-    <part name="parameters" element="tns:logoutResponse" />
+  <message name="LogoutResponse">
+    <part name="parameters" element="tns:LogoutResponse" />
   </message>
   <message name="invalidateSessionsRequest">
     <part name="parameters" element="tns:invalidateSessions" />
@@ -3844,10 +3844,10 @@
       <output message="tns:convertLeadResponse" />
       <fault name="UnexpectedErrorFault" message="tns:UnexpectedErrorFault" />
     </operation>
-    <operation name="logout">
+    <operation name="Logout">
       <documentation>Logout the current user, invalidating the current session.</documentation>
-      <input message="tns:logoutRequest" />
-      <output message="tns:logoutResponse" />
+      <input message="tns:LogoutRequest" />
+      <output message="tns:LogoutResponse" />
       <fault name="UnexpectedErrorFault" message="tns:UnexpectedErrorFault" />
     </operation>
     <operation name="invalidateSessions">
@@ -4669,7 +4669,7 @@
         <soap:fault use="literal" name="UnexpectedErrorFault" namespace="" />
       </fault>
     </operation>
-    <operation name="logout">
+    <operation name="Logout">
       <soap:operation soapAction="" />
       <input>
         <soap:header message="tns:Header" part="SessionHeader" use="literal" />
