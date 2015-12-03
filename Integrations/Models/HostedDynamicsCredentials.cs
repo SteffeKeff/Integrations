@@ -2,7 +2,7 @@
 
 namespace Integrations.Models
 {
-    public class DynamicsCredentials : ICredentials
+    public class HostedCredentials : IDynamicsCredentials
     {
         public string UserName { get; set; }
 
@@ -12,6 +12,6 @@ namespace Integrations.Models
         public string Domain { get; set; }
 
         [Required]
-        public string Region { get; set; }
+        public string Host { get; set; }
     }
 }

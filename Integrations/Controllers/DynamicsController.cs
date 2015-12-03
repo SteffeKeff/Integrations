@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Web.Http;
 using System.Collections.Generic;
 using System.ServiceModel.Security;
@@ -21,11 +22,30 @@ namespace Integrations.Controllers
             base.Dispose(disposing);
             crmService?.Dispose();
         }
-        
-        // TODO: Should be split up into Validate + GetOrganizations (CHECK)
+
+        [Route("Proxies")]
+        [HttpGet]
+        public IHttpActionResult GetProxies()
+        {
+            var hosts = new[] {"crm", "crm9", "crm4", "crm5", "crm6", "crm7", "crm2"};
+            var regions = new[]
+            {
+                "North America", "North America 2", "Europe, Middle East and Africa", "Asia Pacific Area",
+                "Oceania","Japan", "South America"
+            };
+
+            var proxies = hosts.Select((t, count) => new DynamicsProxy
+            {
+                //Host = $"https://dev.{t}.dynamics.com/XRMServices/2011/Discovery.svc", Region = regions[count]
+                Host = hosts[count], Region = regions[count]
+            }).ToList();
+
+            return Ok(proxies);
+        }
+
         [Route("Validate")]
         [HttpPost]
-        public IHttpActionResult ValidateCredentials([FromUri]ICredentials credentials)
+        public IHttpActionResult ValidateCredentials([FromUri]HostedCredentials credentials)
         {
             if (!ModelState.IsValid)
             {
@@ -35,10 +55,6 @@ namespace Integrations.Controllers
             try
             {
                 crmService = new DynamicsService(credentials);
-
-               // MySoftService mss = new MySoftService();
-
-                //var result =  mss.test();
 
                 return Ok();
             }
@@ -52,9 +68,38 @@ namespace Integrations.Controllers
             }
         }
 
+        [Route("ValidateOnPremise")]
+        [HttpPost]
+        public IHttpActionResult ValidateCredentials([FromUri]OnPremiseCredentials credentials)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                new DynamicsService(credentials).GetAllLists(); //Will create seervice and try to fetch all lists to validate
+
+                return Ok();
+            }
+            catch (SecurityNegotiationException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
+            catch (InvalidOperationException)
+            {
+                return BadRequest();
+            }
+        }
+
         [Route("Organizations")]
         [HttpPost]
-        public IHttpActionResult GetOrganizations([FromUri]ICredentials credentials)
+        public IHttpActionResult GetOrganizations([FromUri]HostedCredentials credentials)
         {
             if (!ModelState.IsValid)
             {
@@ -82,10 +127,42 @@ namespace Integrations.Controllers
             }
         }
 
+        [Route("MarketLists")]
+        [HttpPost]
+        public IHttpActionResult GetMarketLists([FromUri]OnPremiseCredentials credentials, [FromUri] bool translate = false)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                crmService = new DynamicsService(credentials);
+
+                var lists = crmService.GetAllLists();
+                var goodLookingLists = GetValuesFromLists(lists, translate);
+
+                return Ok(goodLookingLists);
+            }
+            catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityNegotiationException)
+            {
+                return Unauthorized();
+            }
+        }
+
 
         [Route("Organizations/{orgName}/MarketLists")]
         [HttpPost]
-        public IHttpActionResult GetMarketListsWithAllAttributes(string orgName, [FromUri]ICredentials credentials, [FromUri] bool translate = false, [FromUri] bool allAttributes = true)
+        public IHttpActionResult GetMarketLists(string orgName, [FromUri]HostedCredentials credentials, [FromUri] bool translate = false)
         {
             if (!ModelState.IsValid)
             {
@@ -116,7 +193,7 @@ namespace Integrations.Controllers
 
         [Route("Organizations/{orgName}/MarketLists/{listId}/Contacts")]
         [HttpPost]
-        public IHttpActionResult GetContactsWithAttributes(string orgName, string listId, [FromUri]ICredentials credentials, [FromUri] string[] fields, [FromUri] int top = 0, [FromUri] bool translate = true)
+        public IHttpActionResult GetContacts(string orgName, string listId, [FromUri]HostedCredentials credentials, [FromUri] string[] fields, [FromUri] int top = 0, [FromUri] bool translate = true)
         {
             try
             {
@@ -137,13 +214,58 @@ namespace Integrations.Controllers
             }
         }
 
+        [Route("MarketLists/{listId}/Contacts")]
+        [HttpPost]
+        public IHttpActionResult GetContacts(string listId, [FromUri]OnPremiseCredentials credentials, [FromUri] string[] fields, [FromUri] int top = 0, [FromUri] bool translate = true)
+        {
+            try
+            {
+                crmService = new DynamicsService(credentials);
+
+                var contacts = crmService.GetContactsInList(listId, fields, top);
+                var goodLookingContacts = GetValuesFromContacts(contacts, translate, fields);
+
+                return Ok(goodLookingContacts);
+            }
+            catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
+        }
+
         [Route("Organizations/{orgName}/Contacts/{contactId}/Donotbulkemail")]
         [HttpPut]
-        public IHttpActionResult UpdateBulkEmailForContact(string orgName, string contactId, [FromUri]ICredentials credentials)
+        public IHttpActionResult UpdateBulkEmailForContact(string orgName, string contactId, [FromUri]HostedCredentials credentials)
         {
             try
             {
                 crmService = new DynamicsService(credentials, orgName);
+
+                crmService.ChangeBulkEmail(contactId);
+
+                return Ok();
+            }
+            catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
+        }
+
+        [Route("Contacts/{contactId}/Donotbulkemail")]
+        [HttpPut]
+        public IHttpActionResult UpdateBulkEmailForContact(string contactId, [FromUri]OnPremiseCredentials credentials)
+        {
+            try
+            {
+                crmService = new DynamicsService(credentials);
 
                 crmService.ChangeBulkEmail(contactId);
 
@@ -260,5 +382,12 @@ namespace Integrations.Controllers
 
             return contactsWithDisplayNames;
         }
+
+        public class DynamicsProxy
+        {
+            public string Region { get; set; }
+            public string Host { get; set; }
+    }
+
     }
 }

@@ -18,16 +18,16 @@ namespace Integrations.Services
         private readonly OrganizationServiceProxy organizationServiceProxy;
         private readonly OrganizationDetailCollection organizations;
 
-        public DynamicsService(ICredentials credentials) : this(credentials, "") { }
+        public DynamicsService(IDynamicsCredentials credentials) : this(credentials, "") { }
 
-        public DynamicsService(ICredentials credentials, string organizationUniqueName)
+        public DynamicsService(IDynamicsCredentials credentials, string organizationUniqueName)
         {
             string discoveryServiceAddress, organizationEndpoint;
 
-            if (credentials is DynamicsCredentials)
+            if (credentials is HostedCredentials)
             {
-                var dynamicsCredentials = (DynamicsCredentials) credentials;
-                discoveryServiceAddress = $"https://disco.{dynamicsCredentials.Region}.dynamics.com/XRMServices/2011/Discovery.svc";
+                var dynamicsCredentials = (HostedCredentials) credentials;
+                discoveryServiceAddress = $"https://disco.{dynamicsCredentials.Host}.dynamics.com/XRMServices/2011/Discovery.svc";
 
                 var discoveryProxy = GetDiscoveryServiceProxy(discoveryServiceAddress, dynamicsCredentials);
                 organizations = DiscoverOrganizations(discoveryProxy);
@@ -35,12 +35,16 @@ namespace Integrations.Services
 
                 organizationEndpoint = organization?.Endpoints[EndpointType.OrganizationService];
             }
+            else if (credentials is OnPremiseCredentials)
+            {
+                var hostedCredentials = (OnPremiseCredentials) credentials;
+                var host = hostedCredentials.Host;
+                discoveryServiceAddress = $"http://{host}/XRMServices/2011/Discovery.svc";
+                organizationEndpoint = $"http://{host}/XRMServices/2011/Organization.svc";
+            }
             else
             {
-                var hostedCredentials = (HostedCredentials) credentials;
-                var host = hostedCredentials.Host;
-                discoveryServiceAddress = $"https://{host}/XRMServices/2011/Discovery.svc";
-                organizationEndpoint = "http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc"; //organization.Endpoints[EndpointType.OrganizationService];
+                return;
             }
 
             organizationServiceProxy = GetOrganizationServiceProxy(organizationEndpoint, discoveryServiceAddress, credentials);
@@ -182,7 +186,7 @@ namespace Integrations.Services
             public string DisplayName { get; set; }
         }
 
-        public DiscoveryServiceProxy GetDiscoveryServiceProxy(string discoveryServiceAddress, DynamicsCredentials credentials)
+        public DiscoveryServiceProxy GetDiscoveryServiceProxy(string discoveryServiceAddress, HostedCredentials credentials)
         {
             var serviceManagement = ServiceConfigurationFactory.CreateManagement<IDiscoveryService>(new Uri(discoveryServiceAddress));
 
@@ -192,7 +196,7 @@ namespace Integrations.Services
             return discoveryProxy;
         }
 
-        public OrganizationServiceProxy GetOrganizationServiceProxy(string organizationEndpoint, string discoveryServiceAddress, ICredentials dynamicsCredentials)
+        public OrganizationServiceProxy GetOrganizationServiceProxy(string organizationEndpoint, string discoveryServiceAddress, IDynamicsCredentials dynamicsCredentials)
         {
             if (string.IsNullOrEmpty(organizationEndpoint))
                 throw new ArgumentNullException(nameof(organizationEndpoint));
@@ -212,20 +216,20 @@ namespace Integrations.Services
             return proxy;
         }
 
-        private static AuthenticationCredentials GetCredentials<TService>(IServiceManagement<TService> service, AuthenticationProviderType endpointType, ICredentials credentials)
+        private static AuthenticationCredentials GetCredentials<TService>(IServiceManagement<TService> service, AuthenticationProviderType endpointType, IDynamicsCredentials credentials)
         {
             if (!Enum.IsDefined(typeof (AuthenticationProviderType), endpointType))
                 throw new ArgumentOutOfRangeException(nameof(endpointType));
 
             var domain = "";
             var authCredentials = new AuthenticationCredentials();
-            var credentials1 = credentials as DynamicsCredentials;
-            if (credentials1 != null)
+            if (credentials is HostedCredentials)
             {
-                var dynamicsCredentials = credentials1;
+                var dynamicsCredentials = (HostedCredentials)credentials;
                 domain = dynamicsCredentials.Domain;
             }
 
+            if (credentials == null) return authCredentials;
             var userName = credentials.UserName;
             var password = credentials.Password;
 
@@ -251,8 +255,10 @@ namespace Integrations.Services
                     break;
                 case AuthenticationProviderType.Federation:
                     break;
-                /*case AuthenticationProviderType.OnlineFederation:
-                    break;*/
+                /*
+                case AuthenticationProviderType.OnlineFederation:
+                    break;
+                    */
                 default:
                     authCredentials.ClientCredentials.UserName.UserName = userName;
                     authCredentials.ClientCredentials.UserName.Password = password;
@@ -269,11 +275,11 @@ namespace Integrations.Services
                             };
                         }
                         //
-                        authCredentials.SupportingCredentials = new AuthenticationCredentials
+                        /*    authCredentials.SupportingCredentials = new AuthenticationCredentials
                         {
                             ClientCredentials =
                                     Microsoft.Crm.Services.Utility.DeviceIdManager.LoadOrRegisterDevice()
-                        };
+                        };*/
                         //
                     }
 

@@ -2,7 +2,7 @@
 
 namespace Integrations.Models
 {
-    public interface ICredentials
+    public interface IDynamicsCredentials
     {
         [Required]
         string UserName { get; set; }
