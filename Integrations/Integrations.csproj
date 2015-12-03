@@ -205,9 +205,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\ICredentials.cs" />
-    <Compile Include="Models\DynamicsCredentials.cs" />
-    <Compile Include="Models\HostedCredentials.cs" />
+    <Compile Include="Models\IDynamicsCredentials.cs" />
+    <Compile Include="Models\HostedDynamicsCredentials.cs" />
+    <Compile Include="Models\OnPremiseDynamicsCredentials.cs" />
     <Compile Include="Models\MyOrganizationCrmSdkTypes.cs" />
     <Compile Include="Models\SalesForceCredentials.cs" />
     <Compile Include="Models\ShopifyToken.cs" />

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Integrations.Models
 {
-    public class HostedCredentials : ICredentials
+    public class OnPremiseCredentials : IDynamicsCredentials
     {   
         public string UserName { get; set; }
 
