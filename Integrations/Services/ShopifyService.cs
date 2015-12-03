@@ -10,7 +10,7 @@ namespace Integrations.Services
         private const string API_KEY = "eea19e5efc66ab8c6abe9161e75e58f7";
         private const string API_SECRET = "80156e9299fe2a816dfe57a6619549d0";
         private const string CALLBACK_URL = "http://localhost:1337/Shopify/callback";
-        private readonly string[] rights = new string[] { "read_products", "read_customers" };
+        private readonly string[] rights = { "read_products", "read_customers" };
         private ShopifyAPIAuthorizer authorizer;
 
         public string GetLoginUrl(string shopName)
