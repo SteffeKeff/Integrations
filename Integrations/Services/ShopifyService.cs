@@ -6,43 +6,39 @@ namespace Integrations.Services
 {
     public class ShopifyService
     {
-        private string API_KEY = "eea19e5efc66ab8c6abe9161e75e58f7";
-        private string API_SECRET = "80156e9299fe2a816dfe57a6619549d0";
-        private string CALLBACK_URL = "http://localhost:1337/Shopify/callback";
-        private string[] RIGHTS = new string[] { "read_products", "read_customers" };
+        private const string API_KEY = "eea19e5efc66ab8c6abe9161e75e58f7";
+        private const string API_SECRET = "80156e9299fe2a816dfe57a6619549d0";
+        private const string CALLBACK_URL = "http://localhost:1337/Shopify/callback";
+        private readonly string[] rights = new string[] { "read_products", "read_customers" };
         ShopifyAPIAuthorizer authorizer;
 
         public string GetLoginUrl(string shopName)
         {
-            var returnURL = new Uri(CALLBACK_URL);
+            Uri returnUrl = new Uri(CALLBACK_URL);
             authorizer = new ShopifyAPIAuthorizer(shopName, API_KEY, API_SECRET);
-            var authUrl = authorizer.GetAuthorizationURL(RIGHTS, returnURL.ToString());
+            var authUrl = authorizer.GetAuthorizationURL(rights, returnUrl.ToString());
             return authUrl;
         }
 
-        public string GetAccessToken(string code, string shopName)
+        public dynamic GetAccessToken(string code, string shopName)
         {
             authorizer = new ShopifyAPIAuthorizer(shopName, API_KEY, API_SECRET);
-            var authState = authorizer.AuthorizeClient(code);
+            ShopifyAuthorizationState authState = authorizer.AuthorizeClient(code);
 
-            if (authState != null && authState.AccessToken != null)
-            {
-                var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
-                return authState.AccessToken;
-            }
-            return null;
+            return authState?.AccessToken;
         }
 
-        public JArray GetEntities(string entity, string token, string shopName, int top, string[] fields)
+        public dynamic GetEntities(string entity, string token, string shopName, int top, string[] fields)
         {
-            var authState = new ShopifyAuthorizationState();
-            authState.AccessToken = token;
-            authState.ShopName = shopName;
+            ShopifyAuthorizationState authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
             var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
 
-            dynamic data;
-            var fieldQuery = "";
-            var summary = new JArray();
+            string fieldQuery = "";
+            JArray summary = new JArray();
 
             if (fields.Length != 0)
             {
@@ -52,13 +48,12 @@ namespace Integrations.Services
 
             if (top == 0 || top > 250)
             {
-                dynamic count = api.Get(string.Format("/admin/{0}/count.json", entity));
+                dynamic count = api.Get($"/admin/{entity}/count.json");
 
-                var json = count;
-                data = count;
+                JObject json = count;
                 double realCount = int.Parse(json.GetValue("count").ToString());
                 realCount = realCount / 250;
-                var loops = (int)Math.Ceiling(realCount);
+                int loops = (int)Math.Ceiling(realCount);
 
                 for (int i = 1; i <= loops; i++)
                 {
@@ -72,40 +67,80 @@ namespace Integrations.Services
             return summary;
         }
 
+        public dynamic GetEntity(string entity, string id, string token, string shopName, string[] fields)
+        {
+            ShopifyAuthorizationState authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
+            var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
+
+            var queryString = "";
+            if (fields.Length != 0)
+            {
+                var commaSeparatedFields = string.Join(",", fields);
+                queryString = "fields=" + commaSeparatedFields + "&";
+            }
+
+            string urlSuffix;
+            if (entity.Equals("collections"))
+            {
+                entity = "products";
+                queryString = queryString + "collection_id=" + id;
+                urlSuffix = $"/admin/{entity}.json?{queryString}";
+
+            }
+            else
+            {
+                urlSuffix = $"/admin/{entity}/{id}.json?{queryString}";
+            }
+
+            JObject entityObject = (JObject)api.Get(urlSuffix);
+
+            return entityObject;
+        }
+
         private void collectEntities(ShopifyAPIClient api, JArray summary, string entity, int top, int page, string fieldQuery)
         {
-            var entityObject = (JObject)api.Get(string.Format("/admin/{0}.json?{1}limit={2}&page={3}", entity, fieldQuery, top, page));
-            var entitiesObject = entityObject.GetValue(string.Format("{0}", entity));
-            foreach (JObject customer in entitiesObject)
+            JObject entityObject = (JObject)api.Get($"/admin/{entity}.json?{fieldQuery}limit={top}&page={page}");
+            JToken entitiesObject = entityObject.GetValue($"{entity}");
+            foreach (var jToken in entitiesObject)
             {
-                summary.Add(customer);
+                var entityObj = (JObject)jToken;
+                summary.Add(entityObj);
             }
         }
 
-        public JArray GetCustomerSavedSearches(string token, string shopName)
+        public dynamic GetCustomerSavedSearches(string token, string shopName)
         {
-            var summary = new JArray();
-            var authState = new ShopifyAuthorizationState();
-            authState.AccessToken = token;
-            authState.ShopName = shopName;
+            JArray summary = new JArray();
+            ShopifyAuthorizationState authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
             var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
 
-            var filterObject = (JObject)api.Get("/admin/customer_saved_searches.json");
-            var filtersObject = filterObject.GetValue("customer_saved_searches");
-            foreach (JObject filter in filtersObject)
+            JObject filterObject = (JObject)api.Get("/admin/customer_saved_searches.json");
+            JToken filtersObject = filterObject.GetValue("customer_saved_searches");
+            foreach (var jToken in filtersObject)
             {
+                var filter = (JObject)jToken;
                 summary.Add(filter);
             }
 
             return summary;
         }
 
-        public JArray GetCustomerSavedSearch(string token, string shopName, int id, string[] fields)
+        internal object GetCustomerSavedSearch(string token, string shopName, int id, string[] fields)
         {
-            var customers = new JArray();
-            var authState = new ShopifyAuthorizationState();
-            authState.AccessToken = token;
-            authState.ShopName = shopName;
+            JArray customers = new JArray();
+            ShopifyAuthorizationState authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
             var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
             string fieldQuery = "";
 
@@ -115,10 +150,11 @@ namespace Integrations.Services
                 fieldQuery = "?fields=" + commaSeparatedFields;
             }
 
-            var filterObject = (JObject)api.Get(string.Format("/admin/customer_saved_searches/{0}/customers.json{1}", id, fieldQuery));
-            var customersObject = filterObject.GetValue("customers");
-            foreach (JObject customer in customersObject)
+            JObject filterObject = (JObject)api.Get($"/admin/customer_saved_searches/{id}/customers.json{fieldQuery}");
+            JToken customersObject = filterObject.GetValue("customers");
+            foreach (var jToken in customersObject)
             {
+                var customer = (JObject)jToken;
                 customers.Add(customer);
             }
 
