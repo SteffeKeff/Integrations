@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Integrations.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Integrations_sForce_SforceService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://login.salesforce.com/services/Soap/u/35.0</Value>
+    </Setting>
+    <Setting Name="Integrations_mySoft_OrganizationService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
