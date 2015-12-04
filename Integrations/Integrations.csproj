@@ -207,9 +207,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\DynamicsCredentials.cs" />
-    <Compile Include="Models\IDynamicsCredentials.cs" />
-    <Compile Include="Models\HostedCredentials.cs" />
-    <Compile Include="Models\OnPremiseCredentials.cs" />
     <Compile Include="Models\MyOrganizationCrmSdkTypes.cs" />
     <Compile Include="Models\SalesForceCredentials.cs" />
     <Compile Include="Models\ShopifyToken.cs" />
@@ -223,11 +220,6 @@
     <Compile Include="Services\DynamicsService.cs" />
     <Compile Include="Services\SalesForceService.cs" />
     <Compile Include="Services\ShopifyService.cs" />
-    <Compile Include="Web References\mySoft\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.map</DependentUpon>
-    </Compile>
     <Compile Include="Web References\sForce\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -342,20 +334,6 @@
     <Content Include="Web References\sForce\MergeResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </Content>
-    <Content Include="Web References\mySoft\Entity.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </Content>
-    <Content Include="Web References\mySoft\EntityCollection.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </Content>
-    <Content Include="Web References\mySoft\OrganizationResponse.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </Content>
-    <None Include="Web References\mySoft\OrganizationService.wsdl" />
-    <Content Include="Web References\mySoft\Reference.map">
-      <Generator>MSDiscoCodeGenerator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
     <None Include="Web References\sForce\partner.wsdl" />
     <Content Include="Web References\sForce\PerformQuickActionResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
@@ -427,17 +405,6 @@
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Integrations_sForce_SforceService</CachedSettingsPropName>
-    </WebReferenceUrl>
-    <WebReferenceUrl Include="http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc%3fsingleWsdl">
-      <UrlBehavior>Dynamic</UrlBehavior>
-      <RelPath>Web References\mySoft\</RelPath>
-      <UpdateFromURL>http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc%3fsingleWsdl</UpdateFromURL>
-      <ServiceLocationURL>
-      </ServiceLocationURL>
-      <CachedDynamicPropName>
-      </CachedDynamicPropName>
-      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
-      <CachedSettingsPropName>Integrations_mySoft_OrganizationService</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <PropertyGroup>
