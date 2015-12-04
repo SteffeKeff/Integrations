@@ -2,16 +2,19 @@
 
 namespace Integrations.Models
 {
-    public class HostedCredentials : IDynamicsCredentials
+    public class DynamicsCredentials
     {
+        [Required]
         public string UserName { get; set; }
 
+        [Required]
         public string Password { get; set; }
 
         [Required]
+        public string DiscoveryUrl { get; set; }
+
         public string Domain { get; set; }
 
-        [Required]
-        public string Host { get; set; }
+        public string Organization { get; set; }
     }
 }
