@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Results>
-    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc?singleWsdl" filename="OrganizationService.wsdl" />
-  </Results>
-</DiscoveryClientResultsFile>

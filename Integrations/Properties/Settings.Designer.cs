@@ -32,15 +32,5 @@ namespace Integrations.Properties {
                 return ((string)(this["Integrations_sForce_SforceService"]));
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://mysecrm3.mysoft.se/DHR/XRMServices/2011/Organization.svc")]
-        public string Integrations_mySoft_OrganizationService {
-            get {
-                return ((string)(this["Integrations_mySoft_OrganizationService"]));
-            }
-        }
     }
 }

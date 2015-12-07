@@ -11,6 +11,7 @@ namespace Integrations.Controllers
         public IHttpActionResult Login(string shopname)
         {
             var loginUrl = new ShopifyService().GetLoginUrl(shopname);
+
             return Redirect(loginUrl);
         }
 
@@ -21,6 +22,7 @@ namespace Integrations.Controllers
             var shopName = shop.Replace(".myshopify.com", "");
             var service = new ShopifyService();
             var token = service.GetAccessToken(code, shopName);
+
             return Ok(token);   // Returns 401 if our App is'nt installed or the Token is invalid
         }
 

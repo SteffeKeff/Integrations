@@ -10,14 +10,15 @@ namespace Integrations.Services
         private const string API_KEY = "eea19e5efc66ab8c6abe9161e75e58f7";
         private const string API_SECRET = "80156e9299fe2a816dfe57a6619549d0";
         private const string CALLBACK_URL = "http://localhost:1337/Shopify/callback";
-        private readonly string[] rights = new string[] { "read_products", "read_customers" };
-        ShopifyAPIAuthorizer authorizer;
+        private readonly string[] rights = { "read_products", "read_customers" };
+        private ShopifyAPIAuthorizer authorizer;
 
         public string GetLoginUrl(string shopName)
         {
             var returnUrl = new Uri(CALLBACK_URL);
             authorizer = new ShopifyAPIAuthorizer(shopName, API_KEY, API_SECRET);
             var authUrl = authorizer.GetAuthorizationURL(rights, returnUrl.ToString());
+
             return authUrl;
         }
 
@@ -56,7 +57,7 @@ namespace Integrations.Services
             {
                 dynamic count = api.Get($"/admin/{entity}/count.json");
 
-                JObject json = count;
+                var json = count;
                 double realCount = int.Parse(json.GetValue("count").ToString());
                 realCount = realCount / 250;
                 var loops = (int)Math.Ceiling(realCount);
@@ -70,6 +71,7 @@ namespace Integrations.Services
             {
                 CollectEntities(api, summary, entity, top, 1, fieldQuery);
             }
+
             return summary;
         }
 
@@ -104,7 +106,7 @@ namespace Integrations.Services
                     queryString = queryString + "limit=" + top;
                 }
             }
-            string urlSuffix = $"/admin/{entity}/{id}.json?{queryString}";
+            var urlSuffix = $"/admin/{entity}/{id}.json?{queryString}";
             entityObject = (JObject)api.Get(urlSuffix);
 
             return entityObject;
