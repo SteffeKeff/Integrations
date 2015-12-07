@@ -30,7 +30,7 @@ namespace Integrations.Services
             return authState?.AccessToken;
         }
 
-        public dynamic GetEntities(string entity, string token, string shopName, int top, string[] fields)
+        public dynamic GetEntities(string entity, string token, string shopName, string[] fields, int top, string collectionId)
         {
             var authState = new ShopifyAuthorizationState
             {
@@ -48,6 +48,11 @@ namespace Integrations.Services
                 fieldQuery = "fields=" + commaSeparatedFields + "&";
             }
 
+            if (collectionId != null)
+            {
+                fieldQuery = fieldQuery + "collection_id=" + collectionId + "&";
+            }
+
             if (top == 0 || top > 250)
             {
                 dynamic count = api.Get($"/admin/{entity}/count.json");
@@ -59,52 +64,55 @@ namespace Integrations.Services
 
                 for (var i = 1; i <= loops; i++)
                 {
-                    collectEntities(api, summary, entity, 250, i, fieldQuery);
+                    CollectEntities(api, summary, entity, 250, i, fieldQuery);
                 }
             }
             else
             {
-                collectEntities(api, summary, entity, top, 1, fieldQuery);
+                CollectEntities(api, summary, entity, top, 1, fieldQuery);
             }
 
             return summary;
         }
 
-        public dynamic GetEntity(string entity, string id, string token, string shopName, string[] fields)
+        public dynamic GetEntity(string entity, string id, string token, string shopName, string[] fields, int top)
         {
             var authState = new ShopifyAuthorizationState
             {
                 AccessToken = token,
                 ShopName = shopName
             };
+
             var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
 
             var queryString = "";
+            dynamic entityObject;
             if (fields.Length != 0)
             {
                 var commaSeparatedFields = string.Join(",", fields);
                 queryString = "fields=" + commaSeparatedFields + "&";
             }
 
-            string urlSuffix;
             if (entity.Equals("collections"))
             {
                 entity = "products";
-                queryString = queryString + "collection_id=" + id;
-                urlSuffix = $"/admin/{entity}.json?{queryString}";
-
-            }
-            else
+                entityObject = GetEntities(entity, token, shopName, fields, top, id);
+                return entityObject;
+            }if (entity.Equals("customer_saved_searches"))
             {
-                urlSuffix = $"/admin/{entity}/{id}.json?{queryString}";
+                id = id + "/customers";
+                if (top != 0)
+                {
+                    queryString = queryString + "limit=" + top;
+                }
             }
-
-            var entityObject = (JObject)api.Get(urlSuffix);
+            var urlSuffix = $"/admin/{entity}/{id}.json?{queryString}";
+            entityObject = (JObject)api.Get(urlSuffix);
 
             return entityObject;
         }
 
-        private void collectEntities(ShopifyAPIClient api, JArray summary, string entity, int top, int page, string fieldQuery)
+        private static void CollectEntities(ShopifyAPIClient api, JArray summary, string entity, int top, int page, string fieldQuery)
         {
             var entityObject = (JObject)api.Get($"/admin/{entity}.json?{fieldQuery}limit={top}&page={page}");
             var entitiesObject = entityObject.GetValue($"{entity}");
@@ -112,53 +120,6 @@ namespace Integrations.Services
             {
                 summary.Add(entityObj);
             }
-        }
-
-        public dynamic GetCustomerSavedSearches(string token, string shopName)
-        {
-            var summary = new JArray();
-            var authState = new ShopifyAuthorizationState
-            {
-                AccessToken = token,
-                ShopName = shopName
-            };
-            var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
-
-            var filterObject = (JObject)api.Get("/admin/customer_saved_searches.json");
-            var filtersObject = filterObject.GetValue("customer_saved_searches");
-            foreach (var filter in filtersObject.Cast<JObject>())
-            {
-                summary.Add(filter);
-            }
-
-            return summary;
-        }
-
-        internal object GetCustomerSavedSearch(string token, string shopName, int id, string[] fields)
-        {
-            var customers = new JArray();
-            var authState = new ShopifyAuthorizationState
-            {
-                AccessToken = token,
-                ShopName = shopName
-            };
-            var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
-            var fieldQuery = "";
-
-            if (fields.Length != 0)
-            {
-                var commaSeparatedFields = string.Join(",", fields);
-                fieldQuery = "?fields=" + commaSeparatedFields;
-            }
-
-            var filterObject = (JObject)api.Get($"/admin/customer_saved_searches/{id}/customers.json{fieldQuery}");
-            var customersObject = filterObject.GetValue("customers");
-            foreach (var customer in customersObject.Cast<JObject>())
-            {
-                customers.Add(customer);
-            }
-
-            return customers;
         }
     }
 }

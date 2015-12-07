@@ -31,8 +31,7 @@ namespace Integrations.Controllers
         public IHttpActionResult GetCustomers([FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var customers = service.GetEntities("customers", token, shopname, top, fields);
-
+            var customers = service.GetEntities("customers", token, shopname, fields, top, null);
             return Ok(customers);
         }
 
@@ -41,8 +40,7 @@ namespace Integrations.Controllers
         public IHttpActionResult GetProducts([FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var products = service.GetEntities("products", token, shopname, top, fields);
-
+            var products = service.GetEntities("products", token, shopname, fields, top, null);
             return Ok(products);
         }
 
@@ -51,58 +49,52 @@ namespace Integrations.Controllers
         public IHttpActionResult GetCollections([FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var collections = service.GetEntities("custom_collections", token, shopname, top, fields);
-
+            var collections = service.GetEntities("custom_collections", token, shopname, fields, top, null);
             return Ok(collections);
         }
 
         [Route("Customers/{id}")]
         [HttpGet]
-        public IHttpActionResult GetCustomer(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields)
+        public IHttpActionResult GetCustomer(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var entities = service.GetEntity("customers", id, token, shopname, fields);
-
-            return Ok(entities);
+            var customer = service.GetEntity("customers", id, token, shopname, fields, top);
+            return Ok(customer);
         }
 
         [Route("Products/{id}")]
         [HttpGet]
-        public IHttpActionResult GetProduct(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields)
+        public IHttpActionResult GetProduct(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var entities = service.GetEntity("products", id, token, shopname, fields);
-
-            return Ok(entities);
+            var product = service.GetEntity("products", id, token, shopname, fields, top);
+            return Ok(product);
         }
 
         [Route("Collections/{id}")]
         [HttpGet]
-        public IHttpActionResult GetCollection(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields)
+        public IHttpActionResult GetCollection(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var entities = service.GetEntity("collections", id, token, shopname, fields);
-
-            return Ok(entities);
+            var collection = service.GetEntity("collections", id, token, shopname, fields, top);
+            return Ok(collection);
         }
 
         [Route("Filters")]
         [HttpGet]
-        public IHttpActionResult GetFilters([FromUri] string token, [FromUri] string shopname)
+        public IHttpActionResult GetFilters([FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var filterArray = service.GetCustomerSavedSearches(token, shopname);
-
-            return Ok(filterArray);
+            var filters = service.GetEntities("customer_saved_searches", token, shopname, fields, top, null);
+            return Ok(filters);
         }
 
         [Route("Filters/{id}")]
         [HttpGet]
-        public IHttpActionResult GetFilter(int id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields)
+        public IHttpActionResult GetFilter(string id, [FromUri] string token, [FromUri] string shopname, [FromUri] string[] fields, [FromUri] int top = 0)
         {
             var service = new ShopifyService();
-            var filter = service.GetCustomerSavedSearch(token, shopname, id, fields);
-
+            var filter = service.GetEntity("customer_saved_searches", id, token, shopname, fields, top);
             return Ok(filter);
         }
     }
