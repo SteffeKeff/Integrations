@@ -32,7 +32,7 @@ namespace Integrations.Services
             }
             else
             {
-                //Byter ut discoveryUrl till organizationEndpoint Url
+                //Bygger upp organizationEndpoint Url med hjälp av discoveryUrl
                 organizationEndpoint = credentials.DiscoveryUrl.Remove(credentials.DiscoveryUrl.LastIndexOf('/') +1);
                 organizationEndpoint = string.Concat(organizationEndpoint, "Organization.svc"); 
             }
@@ -59,12 +59,11 @@ namespace Integrations.Services
         public List<Contact> GetContactsInList(string id, string[] fields, int top)
         {
             var listMembersQuery = CreateListMemberQuery(id, top);
-            var contactsQuery = getContactsQuery(fields);
+            var contactsQuery = GetContactsQuery(fields);
             var allContacts = GetAllContacts(contactsQuery, listMembersQuery);
 
             return allContacts;
         }
-
 
         private List<Contact> GetAllContacts(QueryExpression contactsQuery, QueryExpression listMembersQuery)
         {
@@ -99,7 +98,7 @@ namespace Integrations.Services
             return allContacts;
         }
 
-        private QueryExpression CreateListMemberQuery(string id, int top)
+        private static QueryExpression CreateListMemberQuery(string id, int top)
         {
             var listMembersQuery = new QueryExpression { EntityName = "listmember", ColumnSet = new ColumnSet("listid", "entityid") };
             var listid = new Guid(id);
@@ -126,20 +125,18 @@ namespace Integrations.Services
             return listMembersQuery;
         }
 
-        private QueryExpression getContactsQuery(string[] fields)
+        private static QueryExpression GetContactsQuery(string[] fields)
         {
             if (fields.Length == 0) //Returnerar en query med bestämda attributes eller samtliga
             {
                 return new QueryExpression { EntityName = "contact", ColumnSet = new ColumnSet(true) };
             }
-            else
-            {
-                var columnSet = new ColumnSet();
-                fields = fields.Select(s => s.ToLowerInvariant()).ToArray();
-                columnSet.AddColumns(fields);
 
-                return new QueryExpression { EntityName = "contact", ColumnSet = columnSet };
-            }
+            var columnSet = new ColumnSet();
+            fields = fields.Select(s => s.ToLowerInvariant()).ToArray();
+            columnSet.AddColumns(fields);
+
+            return new QueryExpression { EntityName = "contact", ColumnSet = columnSet };
         }
 
         public void ChangeBulkEmail(string contactToUpdate)
@@ -168,12 +165,6 @@ namespace Integrations.Services
                 DisplayName = a.DisplayName.LocalizedLabels.Count > 0 ? a.DisplayName.LocalizedLabels[0].Label : a.LogicalName,
                 LogicalName = a.LogicalName
             });
-        }
-
-        public class AttributeDisplayName
-        {
-            public string LogicalName { get; set; }
-            public string DisplayName { get; set; }
         }
 
         public DiscoveryServiceProxy GetDiscoveryServiceProxy(string discoveryServiceAddress, DynamicsCredentials credentials)
@@ -287,7 +278,7 @@ namespace Integrations.Services
             return orgResponse.Details;
         }
 
-        private TProxy GetProxy<TService, TProxy>(
+        private static TProxy GetProxy<TService, TProxy>(
             IServiceManagement<TService> serviceManagement,
             AuthenticationCredentials authCredentials)
             where TService : class
@@ -310,6 +301,12 @@ namespace Integrations.Services
         public void Dispose()
         {
             organizationServiceProxy.Dispose();
+        }
+
+        public class AttributeDisplayName
+        {
+            public string LogicalName { get; set; }
+            public string DisplayName { get; set; }
         }
     }
 }

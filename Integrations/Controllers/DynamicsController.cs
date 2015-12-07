@@ -58,7 +58,7 @@ namespace Integrations.Controllers
                 }
                 else
                 {
-                    //Will create seervice and try to fetch all lists to validate
+                    //Will create service and try to fetch all lists to validate
                     new DynamicsService(credentials).GetAllMarketLists(); 
                 }
 
@@ -97,6 +97,33 @@ namespace Integrations.Controllers
                 });
 
                 return Ok(organizations);
+            }
+            catch (MessageSecurityException)
+            {
+                return Unauthorized();
+            }
+            catch (SecurityAccessDeniedException)
+            {
+                return Unauthorized();
+            }
+        }
+
+        [Route("Fields")]
+        [HttpPost]
+        public IHttpActionResult GetContactFields([FromUri]DynamicsCredentials credentials)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                crmService = new DynamicsService(credentials);
+
+                var attributes = crmService.GetAttributeDisplayName("contact");
+
+                return Ok(attributes);
             }
             catch (MessageSecurityException)
             {
@@ -191,12 +218,11 @@ namespace Integrations.Controllers
 
                 foreach (var prop in list.GetType().GetProperties())
                 {
-                    if (prop.Name != "Item")
-                    {
-                        var val = prop.GetValue(list, null);
+                    if (prop.Name == "Item") continue;
+
+                    var val = prop.GetValue(list, null);
                         
-                        jsonList[prop.Name] = val?.ToString();
-                    }
+                    jsonList[prop.Name] = val?.ToString();
                 }
 
                 jsonLists.Add(jsonList);
@@ -214,28 +240,34 @@ namespace Integrations.Controllers
         {
             var jsonContacts = new JArray();
 
-            foreach (Contact contact in contacts)
+            foreach (var contact in contacts)
             {
                 var jsonContact = new JObject();
 
                 if (fields.Length == 0)
                 {
-                    foreach (var prop in contact.GetType().GetProperties())
+                    foreach (var prop in contact.GetType().GetProperties().Where(prop => prop.Name != "Item"))
                     {
-                        if (prop.Name != "Item")
+                        if (prop.Name == "Attributes")
                         {
-                            var val = prop.GetValue(contact, null);
-                            
-                            jsonContact[prop.Name] = val?.ToString();
+                            var attributes = (AttributeCollection)prop.GetValue(contact, null);
+
+                            foreach (var attribute in attributes)
+                            {
+                                jsonContact[attribute.Key] = attribute.Value?.ToString();
+                            }
                         }
+
+                        var val = prop.GetValue(contact, null);
+                        if(val == null)    
+                            jsonContact[prop.Name] = null;//val?.ToString();
                     }
                 }
                 else
                 {
                     foreach (var field in fields)
                     {
-                        if(contact.GetAttributeValue<object>(field) != null)
-                            jsonContact[field] = contact.GetAttributeValue<object>(field).ToString().ToLower();
+                        jsonContact[field] = contact.GetAttributeValue<object>(field)?.ToString().ToLower();
                     }
                 }
 
@@ -287,7 +319,7 @@ namespace Integrations.Controllers
         {
             public string Region { get; set; }
             public string DiscoveryUrl { get; set; }
-    }
+        }
 
     }
 }
