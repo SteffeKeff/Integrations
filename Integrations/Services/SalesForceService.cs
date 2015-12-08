@@ -13,7 +13,7 @@ namespace Integrations.Services
 {
     public class SalesForceService
     {
-        readonly SforceService binding;
+        private readonly SforceService binding;
 
         public SalesForceService()
         {
