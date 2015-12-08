@@ -201,6 +201,7 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DynamicsController.cs" />
+    <Compile Include="Controllers\JetshopController.cs" />
     <Compile Include="Controllers\SalesForceController.cs" />
     <Compile Include="Controllers\ShopifyController.cs" />
     <Compile Include="Global.asax.cs">

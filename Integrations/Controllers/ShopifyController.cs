@@ -32,6 +32,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var customers = service.GetEntities("customers", token, shopname, fields, top, null);
+
             return Ok(customers);
         }
 
@@ -41,6 +42,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var products = service.GetEntities("products", token, shopname, fields, top, null);
+
             return Ok(products);
         }
 
@@ -50,6 +52,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var collections = service.GetEntities("custom_collections", token, shopname, fields, top, null);
+
             return Ok(collections);
         }
 
@@ -59,6 +62,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var customer = service.GetEntity("customers", id, token, shopname, fields, top);
+
             return Ok(customer);
         }
 
@@ -68,6 +72,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var product = service.GetEntity("products", id, token, shopname, fields, top);
+
             return Ok(product);
         }
 
@@ -77,6 +82,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var collection = service.GetEntity("collections", id, token, shopname, fields, top);
+
             return Ok(collection);
         }
 
@@ -86,6 +92,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var filters = service.GetEntities("customer_saved_searches", token, shopname, fields, top, null);
+
             return Ok(filters);
         }
 
@@ -95,6 +102,7 @@ namespace Integrations.Controllers
         {
             var service = new ShopifyService();
             var filter = service.GetEntity("customer_saved_searches", id, token, shopname, fields, top);
+
             return Ok(filter);
         }
     }
