@@ -129,3 +129,4 @@ C:\Users\maildirect\Documents\Visual Studio 2015\Projects\Integrations\Integrati
 C:\Users\maildirect\Documents\Visual Studio 2015\Projects\Integrations\Integrations\bin\Microsoft.Vsa.xml
 C:\Users\maildirect\Documents\Visual Studio 2015\Projects\Integrations\Integrations\obj\Debug\Integrations.dll
 C:\Users\maildirect\Documents\Visual Studio 2015\Projects\Integrations\Integrations\obj\Debug\Integrations.pdb
+C:\Users\maildirect\Documents\Visual Studio 2015\Projects\Integrations\Integrations\obj\Debug\Integrations.csprojResolveAssemblyReference.cache

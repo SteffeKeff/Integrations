@@ -2,7 +2,7 @@
 using System.Web.Http;
 using System.Collections.Generic;
 using System.ServiceModel.Security;
-
+using System.Web.Http.Cors;
 using Microsoft.Xrm.Sdk;
 using Newtonsoft.Json.Linq;
 using Integrations.Models;
@@ -11,6 +11,7 @@ using Integrations.Services;
 namespace Integrations.Controllers
 {
 
+    [EnableCors(origins: "http://localhost:8888", headers: "*", methods: "*")]
     [RoutePrefix("Dynamics")]
     public class DynamicsController : ApiController
     {
@@ -26,10 +27,10 @@ namespace Integrations.Controllers
         [HttpGet]
         public IHttpActionResult GetProxies()
         {
-            var discoveryUrls = new[] {"crm", "crm9", "crm4", "crm5", "crm6", "crm7", "crm2"};
+            var discoveryUrls = new[] { "crm4", "crm", "crm9", "crm5", "crm6", "crm7", "crm2"};
             var regions = new[]
             {
-                "North America", "North America 2", "Europe, Middle East and Africa", "Asia Pacific Area",
+                "Europe, Middle East and Africa", "North America", "North America 2", "Asia Pacific Area",
                 "Oceania","Japan", "South America"
             };
 
