@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using Newtonsoft.Json;
 using System.Web.Http;
+using Integrations.Services;
+using Newtonsoft.Json.Linq;
 
 namespace Integrations.Controllers
 {
@@ -9,17 +11,12 @@ namespace Integrations.Controllers
     {
         [Route("Products")]
         [HttpGet]
-        public IHttpActionResult GetProducts([FromUri] string domain)
+        public IHttpActionResult GetProducts([FromUri] string domain, [FromUri] int top = 0)
         {
-            var URL = $"http://{domain}/Services/Rest/v1/json/products";
-            string jsonString;
-            using (var wc = new WebClient())
-            {
-
-                jsonString = wc.DownloadString(URL);
-            }
-            dynamic cleanJson = JsonConvert.DeserializeObject(jsonString);
-            return Ok(cleanJson);
+            var service = new JetshopService();
+            var url = $"http://{domain}/Services/Rest/v1/json/products";
+            var result = service.GetProducts(url, top);
+            return Ok(result);
         }
     }
 }

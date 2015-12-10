@@ -219,6 +219,7 @@
     </Compile>
     <Compile Include="Services\DeviceIdManager.cs" />
     <Compile Include="Services\DynamicsService.cs" />
+    <Compile Include="Services\JetshopService.cs" />
     <Compile Include="Services\SalesForceService.cs" />
     <Compile Include="Services\ShopifyService.cs" />
     <Compile Include="Web References\sForce\Reference.cs">
