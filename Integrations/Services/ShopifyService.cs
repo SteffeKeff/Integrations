@@ -10,7 +10,7 @@ namespace Integrations.Services
         private const string API_KEY = "eea19e5efc66ab8c6abe9161e75e58f7";
         private const string API_SECRET = "80156e9299fe2a816dfe57a6619549d0";
         private const string CALLBACK_URL = "http://localhost:1337/Shopify/callback";
-        private readonly string[] rights = { "read_products", "read_customers" };
+        private readonly string[] rights = { "read_products", "read_customers", "read_content", "read_orders", "read_script_tags", "read_fulfillments", "read_themes", "read_shipping", "write_content", "write_products", "write_orders", "write_customers", "write_shipping", "write_themes", "write_script_tags", "write_fulfillments" };
         private ShopifyAPIAuthorizer authorizer;
 
         public string GetLoginUrl(string shopName)
@@ -61,6 +61,9 @@ namespace Integrations.Services
                 double realCount = int.Parse(json.GetValue("count").ToString());
                 realCount = realCount / 250;
                 var loops = (int)Math.Ceiling(realCount);
+
+                if (entity == "webhooks")
+                    loops = 1;
 
                 for (var i = 1; i <= loops; i++)
                 {
@@ -120,6 +123,36 @@ namespace Integrations.Services
             {
                 summary.Add(entityObj);
             }
+        }
+
+        public object CreateEntity(string entity, string token, string shopName, object body)
+        {
+            var authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
+
+            var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
+
+            var res = api.Post($"/admin/{entity}.json", body);
+
+            return res;
+        }
+
+        public object DeleteEntity(string entity, string token, string shopName, string id)
+        {
+            var authState = new ShopifyAuthorizationState
+            {
+                AccessToken = token,
+                ShopName = shopName
+            };
+
+            var api = new ShopifyAPIClient(authState, new JsonDataTranslator());
+
+            var res = api.Delete($"/admin/{entity}/{id}.json");
+
+            return res;
         }
     }
 }
