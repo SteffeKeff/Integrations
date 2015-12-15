@@ -1,8 +1,5 @@
-﻿using System.Net;
-using Newtonsoft.Json;
-using System.Web.Http;
+﻿using System.Web.Http;
 using Integrations.Services;
-using Newtonsoft.Json.Linq;
 
 namespace Integrations.Controllers
 {
